@@ -48,6 +48,196 @@ struct Category {
 
 
 
+void addTask(Task tasks[], int& count) {
+    if (count >= MAX_TASKS) {
+        cout << "Task limit reached.\n";
+        return;
+    }
+
+    Task& t = tasks[count];
+
+    cout << "Title: ";
+    getline(cin >> ws, t.title);
+    cout << "Deadline (YYYY-MM-DD): ";
+    getline(cin, t.deadline);
+    int pr, tp;
+    cout << "Priority (1-Low, 2-Medium, 3-High): ";
+    cin >> pr;
+    t.priority = static_cast<Priority>(pr);
+    cout << "Type (0-Personal, 1-Work, 2-Study): ";
+    cin >> tp;
+    t.type = static_cast<TaskType>(tp);
+    t.done = false;
+
+    cout << "User name: ";
+    getline(cin >> ws, t.user.name);
+    cout << "User forname: ";
+    getline(cin, t.user.forname);
+    cout << "User id: ";
+    cin >> t.user.id;
+
+    count++;
+    cout << "Task added.\n";
+}
+
+void showUserTasks(Task tasks[], int count, const string& username) {
+    bool found = false;
+    for (int i = 0; i < count; i++) {
+        if (tasks[i].user.name == username) {
+            cout << tasks[i].title << " "
+                << tasks[i].deadline << " "
+                << tasks[i].priority << " "
+                << tasks[i].type << " "
+                << tasks[i].user.name << " "
+                << tasks[i].user.forname << " "
+                << tasks[i].user.id << " "
+                << (tasks[i].done ? "Done" : "NotDone") << endl;
+            found = true;
+        }
+    }
+    if (!found) cout << "No tasks found for this user.\n";
+}
+
+void deleteTask(Task tasks[], int& count, int index) {
+    if (index < 0 || index >= count) {
+        cout << "Invalid index.\n";
+        return;
+    }
+    for (int i = index; i < count - 1; i++) {
+        tasks[i] = tasks[i + 1];
+    }
+    count--;
+    cout << "Task deleted.\n";
+}
+
+void markDone(Task tasks[], int count, int index) {
+    if (index < 0 || index >= count) {
+        cout << "Invalid index.\n";
+        return;
+    }
+    tasks[index].done = true;
+    cout << "Task marked as done.\n";
+}
+
+void saveToAll(const Task tasks[], int count) {
+    ofstream fout("tasks.txt");
+    for (int i = 0; i < count; i++) {
+        fout << tasks[i].title << " "
+            << tasks[i].deadline << " "
+            << tasks[i].priority << " "
+            << tasks[i].type << " "
+            << tasks[i].user.name << " "
+            << tasks[i].user.forname << " "
+            << tasks[i].user.id << " "
+            << (tasks[i].done ? "Done" : "NotDone") << endl;
+    }
+    fout.close();
+    cout << "Saved to tasks.txt\n";
+}
+
+void saveToPersonal(const Task tasks[], int count) {
+    for (int i = 0; i < count; i++) {
+        string filename = tasks[i].user.name + "_" + tasks[i].user.forname + ".txt";
+        ofstream fout(filename, ios::app);
+        fout << tasks[i].title << " "
+            << tasks[i].deadline << " "
+            << tasks[i].priority << " "
+            << tasks[i].type << " "
+            << tasks[i].user.name << " "
+            << tasks[i].user.forname << " "
+            << tasks[i].user.id << " "
+            << (tasks[i].done ? "Done" : "NotDone") << endl;
+        fout.close();
+    }
+    cout << "Saved to personal files.\n";
+}
+
+void saveByCategory(const Task tasks[], int count) {
+    for (int cat = 0; cat <= 2; cat++) {
+        string filename;
+        if (cat == PERSONAL) filename = "personal.txt";
+        else if (cat == WORK) filename = "work.txt";
+        else filename = "study.txt";
+
+        ofstream fout(filename);
+        for (int i = 0; i < count; i++) {
+            if (tasks[i].type == cat) {
+                fout << tasks[i].title << " "
+                    << tasks[i].deadline << " "
+                    <<
+                    tasks[i].priority << " "
+                    << tasks[i].type << " "
+                    << tasks[i].user.name << " "
+                    << tasks[i].user.forname << " "
+                    << tasks[i].user.id << " "
+                    << (tasks[i].done ? "Done" : "NotDone") << endl;
+            }
+        }
+        fout.close();
+    }
+    cout << "Saved to category files.\n";
+}
+
+void loadFromFile(Task tasks[], int& count, const string& filename) {
+    ifstream fin(filename);
+    if (!fin.is_open()) {
+        cout << "Cannot open file.\n";
+        return;
+    }
+
+    Task temp;
+    while (fin >> temp.title >> temp.deadline >> (int&)temp.priority >> (int&)temp.type
+        >> temp.user.name >> temp.user.forname >> temp.user.id) {
+        string doneStr;
+        fin >> doneStr;
+        temp.done = (doneStr == "Done");
+        tasks[count++] = temp;
+    }
+
+    fin.close();
+    cout << "Loaded tasks from file.\n";
+}
+
+void searchByPriority(const Task tasks[], int count, Priority p) {
+    for (int i = 0; i < count; i++) {
+        if (tasks[i].priority == p) {
+            cout << tasks[i].title << " " << tasks[i].deadline << endl;
+        }
+    }
+}
+
+void searchByDeadline(const Task tasks[], int count, const string& deadline) {
+    bool found = false;
+    for (int i = 0; i < count; i++) {
+        if (tasks[i].deadline == deadline) {
+            cout << tasks[i].title << " "
+                << tasks[i].deadline << " "
+                << tasks[i].priority << " "
+                << tasks[i].type << " "
+                << tasks[i].user.name << " "
+                << tasks[i].user.forname << " "
+                << tasks[i].user.id << " "
+                << (tasks[i].done ? "Done" : "NotDone") << endl;
+            found = true;
+        }
+    }
+    if (!found) cout << "No tasks found with this deadline.\n";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void main() {
     Task tasks[MAX_TASKS];
     int count = 0;
